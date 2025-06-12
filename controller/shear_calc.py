@@ -2,26 +2,33 @@
 import math
 
 class ShearCalculator:
-    def __init__(self, L, b, d, fc, carga_total, phi_v, fyv, carga_ultima_mayorada):
+    def __init__(self, L, b, d, fc, carga_total, phi_v, fyv, cargas_muertas, carga_viva,h):
         # Validar tipos
-        if None in [L, b, d, fc, carga_ultima_mayorada]:
+        if None in [L, b, d, fc, cargas_muertas, carga_viva]:
             raise ValueError("Parámetros no pueden ser None")
         self.L = float(L)
         self.b = float(b)
         self.d = float(d)
         self.fc = float(fc)
-        self.carga_ultima_mayorada = float(carga_ultima_mayorada)
+        self.cargas_muertas = float(cargas_muertas)
+        self.carga_viva = float(carga_viva)
         self.phi_v = 0.75
         self.fyv = float(fyv if fyv is not None else 420)  # Valor por defecto 420 MPas
+        self.h = float(h)
 
     def calcular_cortante(self):
-        wu = self.carga_ultima_mayorada
-        V_max = (wu * self.L) / 2
-        Vc = 0.75 * (0.17 * math.sqrt(self.fc) * self.b * self.d) * 1000
+        # 2. Cálculo de cargas
+        peso_propio = self.b * self.h * 24  # Densidad del concreto aprox. 24 kN/m³
+        self.carga_muerta_total = peso_propio + self.cargas_muertas
+        self.carga_total = self.carga_muerta_total + self.carga_viva
+        self.carga_ultima_mayorada = 1.2 * self.carga_muerta_total + 1.6 * self.carga_viva
+        wu = self.carga_ultima_mayorada  # Carga distribuida en kN/m
+        V_max = (wu * self.L) / 2  # Cortante máximo en kN
+        Vc = 0.75 * (0.17 * math.sqrt(self.fc) * self.b * self.d) * 1000  # Resistencia al cortante del concreto en kN
         Vud = wu * ((self.L / 2) - self.d)
         # Límites de cortante
-        Vmax1 = 0.66 * (math.sqrt(self.fc) * self.b * self.d) * 1000
-        Vmax2 = 0.33 * (math.sqrt(self.fc) * self.b * self.d) * 1000
+        Vmax1 = 0.66 * (math.sqrt(self.fc) * self.b * self.d) * 1000 
+        Vmax2 = 0.33 * (math.sqrt(self.fc) * self.b * self.d) * 1000 
         phiVc = 0.75 * Vc
         Vmin = 0.75 * (Vc / 2)
         # Propiedades de estribos (#3)
