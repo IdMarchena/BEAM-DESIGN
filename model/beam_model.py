@@ -2,12 +2,14 @@ class BeamModel:
     def __init__(self):
         # Propiedades básicas
         self.L = None  # Luz (m)
+        self.t= None #tiempo en años 
         self.b = None  # Ancho (m)
         self.h = None  # Altura (m)
         self.d = None  # Altura efectiva (m)
         self.fc = None  # Resistencia concreto (MPa)
         self.fy = None  # Resistencia acero (MPa)
         self.fyv = None  # Resistencia estribos (MPa)
+        
 
         # Cargas
         self.cargas_muertas = None
@@ -25,7 +27,7 @@ class BeamModel:
 
     def calcular_variables_auxiliares(self):
         """Calcula propiedades derivadas"""
-        if None in [self.h, self.b, self.fc, self.fy, self.cargas_muertas, self.carga_viva]:
+        if None in [self.h, self.t,self.b, self.fc, self.fy, self.cargas_muertas, self.carga_viva]:
             raise ValueError("Faltan datos requeridos")
             
         self.d = self.h - 0.04  # Recubrimiento de 4cm
