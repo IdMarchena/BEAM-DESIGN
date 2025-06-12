@@ -42,7 +42,7 @@ class MainWindow(tk.Tk):
             ("Resistencia del concreto (f'c, MPa):", "fc"),
             ("Resistencia del acero (fy, MPa):", "fy"),
             ("Cargas muertas adicionales (kN/m):", "cargas_muertas"),
-            ("Carga viva (kN/m):", "carga_viva"),
+            ("Carga viva (kN/m):", "carga_viva")
         ]
         self.entries = {}
         for i, (label_text, var_name) in enumerate(variables):
@@ -106,7 +106,7 @@ class MainWindow(tk.Tk):
             print("[INFO] Calculando variables auxiliares" )
             self.model.calcular_variables_auxiliares()
 
-            required_vars = ['L', 'b', 'd', 'fc', 'fy', 'fyv', 'carga_ultima_mayorada']
+            required_vars = ['L','t','h', 'b', 'd', 'fc', 'fy', 'fyv', 'carga_ultima_mayorada']
             for var in required_vars:
                 if getattr(self.model, var) is None:
                     raise ValueError(f"La variable {var} no fue calculada correctamente")
@@ -117,27 +117,29 @@ class MainWindow(tk.Tk):
                 cargas_muertas=self.model.cargas_muertas, carga_viva=self.model.carga_viva
             )
             print("[INFO] retornado la lista de variables instancia del modelo" )
-            resultados_flexion = self.calculator.diseño_flexion()
+            self.resultados_flexion = self.calculator.diseño_flexion()
+        
             print("[INFO] Creando instancia del la clase que hace los calculos para cortante de la viga" )
             self.shearCalculator = ShearCalculator(
                 L=self.model.L, b=self.model.b, d=self.model.d,
                 fc=self.model.fc, carga_total=self.model.carga_total,
-                phi_v=self.model.phi_v, fyv=self.model.fyv,
-                carga_ultima_mayorada=self.model.carga_ultima_mayorada
+                phi_v=self.model.phi_v, fyv=self.model.fyv,cargas_muertas=self.model.cargas_muertas,
+                carga_viva=self.model.carga_viva,
+                h=self.model.h
             )
             print("[INFO] retornado la lista de variables instancia del modelo" )
             resultados_cortante = self.shearCalculator.calcular_cortante()
 
 
             print("[INFO] uniendo as 3 listas de resultado en una lista global de variables" )
-            self.resultados_globales = {**resultados_flexion, **resultados_cortante}
+            self.resultados_globales = {**self.resultados_flexion, **resultados_cortante}
 
 
             print("[INFO] abriendo la ventana extra para el calculo de los espaceamientos" )
             # Abre ventana para seleccionar barras
             BarSelectionWindow(
                 parent=self,
-                as_required=self.resultados_globales['as_requerida'],
+                as_required=self.resultados_flexion['as_requerida'],
                 callback_guardar=self.update_bar_data,
                 b=self.model.b
             )
@@ -195,8 +197,8 @@ class MainWindow(tk.Tk):
 
         # Geometría
         self.text_resultados.insert(tk.END, "--- Geometría ---\n")
-        self.text_resultados.insert(tk.END, f"Altura mínima recomendada: {resultados['h_minima']:.2f} m\n")
-        self.text_resultados.insert(tk.END, f"Advertencia para la altura: {'✅ OK' if resultados['h'] > resultados['h_minima'] else '⚠️ Menor al mínimo'} ({self.model.h} m)\n\n")
+        self.text_resultados.insert(tk.END, f"Altura mínima recomendada: {resultados['h_minima']:.2f} cm\n")
+        self.text_resultados.insert(tk.END, f"Advertencia para la altura: {'✅ OK' if resultados['h_minima'] > resultados['h'] else '⚠️ Menor al mínimo'} ({self.model.h} m)\n\n")
 
         # Cargas
         self.text_resultados.insert(tk.END, "--- Cargas ---\n", "negrilla")
