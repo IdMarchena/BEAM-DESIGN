@@ -1,6 +1,7 @@
 class BarProperties:
     def __init__(self):
         self.bars = {
+            "3": {"diametro": 9.5, "area": 71},
             "4": {"diametro": 12.7, "area": 129},
             "5": {"diametro": 15.9, "area": 199},
             "6": {"diametro": 19.1, "area": 284},
