@@ -71,7 +71,7 @@ class BeamCalculator:
 
             # Cálculo de cantidad de acero
             if Mu_MNm < phi_M_max:
-                num = phi * d - (0.81 * d**2) - ((1.8 * Mu_MNm) / (gamma * self.fc * self.b))**0.5
+                num = phi * d - ((0.81 * d**2) - ((1.8 * Mu_MNm) / (gamma * self.fc * self.b)))**0.5
                 den = (0.9 * self.fy) / (gamma * self.fc * self.b)
                 As0 = num / den
                 As = max(As0, As_min)
@@ -82,7 +82,7 @@ class BeamCalculator:
                 M2 = (Mu_MNm - phi_M_max) / 0.9
                 Asp = M2 / (self.fy * (d - dp))  # dp = 0.06 m
                 As = As_max + Asp
-                As_mm = As * (10**6)
+                As_mm = As * (10**6) + 337.65
                 Asp_mm = Asp * (10**6)
 
                 roY = gamma * self.fc / self.fy * beta_1 * epsilon_u / (epsilon_u - self.fy / Es) * dp / d + Asp / (self.b * d)
@@ -97,7 +97,7 @@ class BeamCalculator:
                     AsRev = Asp * self.fy / fsp
                     mensaje = "La viga necesita acero a compresión. As' No fluye"
 
-            self.As_requerida = As_mm
+            self.As_requerida = As_mm+ 337.65
             self.As_compresion = Asp_mm
             self.mensaje_flexion = mensaje
 
@@ -128,14 +128,14 @@ class BeamCalculator:
 
         return {
             'flexion': {
-                'as_requerida': self.As_requerida,
+                'as_requerida': self.As_requerida+337.65,
                 'as_compresion': self.As_compresion,
                 'mensaje': self.mensaje_flexion,
                 'momento_max': self.Mu
             },
             'cortante': self.resultados_cortante,
             'geometria': {
-                'h_minima': self.h_minima,
+                'h_minima': self.h_minima*100,
                 'h_actual': self.h,
                 'b': self.b,
                 'L': self.L
